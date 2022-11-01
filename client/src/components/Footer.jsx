@@ -5,11 +5,6 @@ export default function Footer() {
 
   return (
     <Box 
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "92.6vh",
-      }}
     >
       <CssBaseline />
       <Box

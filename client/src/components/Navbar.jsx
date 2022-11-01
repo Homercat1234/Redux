@@ -20,7 +20,13 @@ function NavDrawer() {
 
   return (
     <>
-      <Drawer open={openDrawer} onClose={() => setOpenDrawer(false)}>
+      <Drawer
+        PaperProps={{
+          sx: { width: "50%" },
+        }}
+        open={openDrawer}
+        onClose={() => setOpenDrawer(false)}
+      >
         <List>
           <Link style={{ textDecoration: "none", color: "black" }} to="/">
             <ListItem onClick={() => setOpenDrawer(false)}>
@@ -78,8 +84,9 @@ export default function Navbar() {
 
   return (
     <>
-      <AppBar elevation={sticky === true ? 2 : 0}
-        position={sticky === true ? "sticky" : "static" }
+      <AppBar
+        elevation={sticky === true ? 2 : 0}
+        position={sticky === true ? "sticky" : "static"}
         sx={{ flexGrow: 1, bgcolor: theme.palette.primary.dark }}
       >
         <Toolbar>
