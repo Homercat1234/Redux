@@ -1,13 +1,31 @@
-import React from 'react';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-function Footer() {
+import * as React from "react";
+import { Typography, Box, CssBaseline, useTheme } from "@mui/material";
+export default function Footer() {
+  const theme = useTheme();
+
   return (
-    <Container fluid className="bg-dark d-flex flex-column text-center text-white m-0 py-2 justify-content-center" style={{position: 'abolute', bottom: '0', width: '100%', height: '8.5rem' }}>
-      <Row><small>&copy;Michael Smith 2022</small></Row>
-      <Row><small>All rights reserved.</small></Row>
-    </Container>
+    <Box 
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "92.6vh",
+      }}
+    >
+      <CssBaseline />
+      <Box
+        component="footer"
+        sx={{
+          py: 3,
+          px: 2,
+          mb: 0,
+          mt: "auto",
+          backgroundColor: theme.palette.primary.dark,
+        }}
+      >
+        <Typography variant="body2" style={{ textAlign: "center", color: "white"}}>
+          <>&copy;</> <b>Michael A. Smith</b> 2022.
+        </Typography>
+      </Box>
+    </Box>
   );
 }
-
-export default Footer;
