@@ -1,6 +1,7 @@
 import Blog from "./pages/Blog";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Login from "./pages/Login";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -12,7 +13,7 @@ function App() {
           <Route path="/" index element={<Blog />} />
           <Route path="/home" index element={<Blog />} />
           <Route path="/index" index element={<Blog />} />
-          <Route path="/login" element={<Blog />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Blog />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/*" element={<Blog />} />
