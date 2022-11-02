@@ -1,48 +1,128 @@
-import { Container, Row, Col, Button, Form, Card } from "react-bootstrap";
+import {
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  FormControlLabel,
+  Checkbox,
+  Paper,
+  Box,
+  Grid,
+  Typography,
+} from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import img from "../images/cloud.jpg";
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
+
+const theme = createTheme();
 
 export default function Login() {
-  return (
-    <Container fluid className="p-0 noGutters" style={{ height: "100vh" }}>
-      <Row className="m-0 noGutters">
-        <Col className="p-0 noGutters">
-          <Row lg={6} className="justify-content-center noGutters">
-            <Col lg={4} noGutters={true}>
-              <div
-                className="bg order-1"
-                style={{
-                  backgroundImage:
-                    "url(https://www.hec.ca/en/profs/guy.pare.jpg)",
-                  height: "100%",
-                }}
-              />
-            </Col>
-            <Col lg={5} noGutters={true} className="noGutters">
-              <div className="bg-dark">
-                <Form>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Email address</Form.Label>
-                    <Form.Control type="email" placeholder="Enter email" />
-                    <Form.Text className="text-muted">
-                      We'll never share your email with anyone else.
-                    </Form.Text>
-                  </Form.Group>
+  
+  useEffect(() => {
+    window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
+  }, []);
 
-                  <Form.Group className="mb-3" controlId="formBasicPassword">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" placeholder="Password" />
-                  </Form.Group>
-                  <Form.Group className="mb-3" controlId="formBasicCheckbox">
-                    <Form.Check type="checkbox" label="Check me out" />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    Submit
-                  </Button>
-                </Form>
-              </div>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-    </Container>
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log({
+      email: data.get("email"),
+      password: data.get("password"),
+    });
+  };
+
+  return (
+    <ThemeProvider theme={theme}>
+      <Grid container component="main" sx={{ height: "100vh" }}>
+        <CssBaseline />
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            backgroundImage: `url(${img})`,
+            backgroundRepeat: "no-repeat",
+            backgroundColor: (t) =>
+              t.palette.mode === "light"
+                ? t.palette.grey[50]
+                : t.palette.grey[900],
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        />
+        <Grid item xs={12} sm={8} md={5} component={Paper} square>
+          <Box
+            sx={{
+              my: 8,
+              mx: 4,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign in
+            </Typography>
+            <Box
+              component="form"
+              noValidate
+              onSubmit={handleSubmit}
+              sx={{ mt: 1 }}
+            >
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                autoFocus
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="current-password"
+              />
+              <FormControlLabel
+                control={<Checkbox value="remember" color="primary" />}
+                label="Remember me"
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+              >
+                Sign In
+              </Button>
+              <Grid container>
+                <Grid item xs>
+                  <Link style={{ color: "blue"}} href="#" variant="body2">
+                    Forgot password?
+                  </Link>
+                </Grid>
+                <Grid item>
+                  <Link style={{ color: "blue"}}to="/register" variant="body2">
+                    {"Don't have an account? Sign Up"}
+                  </Link>
+                </Grid>
+              </Grid>
+            </Box>
+          </Box>
+        </Grid>
+      </Grid>
+    </ThemeProvider>
   );
 }
