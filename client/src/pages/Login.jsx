@@ -1,21 +1,29 @@
-import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";
+import {
+  Avatar,
+  Button,
+  CssBaseline,
+  TextField,
+  FormControlLabel,
+  Checkbox,
+  Paper,
+  Box,
+  Grid,
+  Typography,
+} from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import img from "../images/cloud.jpg";
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const theme = createTheme();
 
 export default function Login() {
+  
+  useEffect(() => {
+    window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
+  }, []);
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -35,7 +43,7 @@ export default function Login() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: "url(https://source.unsplash.com/random)",
+            backgroundImage: `url(${img})`,
             backgroundRepeat: "no-repeat",
             backgroundColor: (t) =>
               t.palette.mode === "light"
@@ -101,12 +109,12 @@ export default function Login() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="#" variant="body2">
+                  <Link style={{ color: "blue"}} href="#" variant="body2">
                     Forgot password?
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link href="#" variant="body2">
+                  <Link style={{ color: "blue"}}to="/register" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>

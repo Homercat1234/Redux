@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Typography, Box, CssBaseline, useTheme } from "@mui/material";
 export default function Footer() {
   const theme = useTheme();

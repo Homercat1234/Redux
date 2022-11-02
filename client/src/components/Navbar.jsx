@@ -91,7 +91,9 @@ export default function Navbar() {
       >
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Custom
+            <Link style={{ textDecoration: "none", color: "white" }} to="/">
+              Custom
+            </Link>
             {isMobile === false && (
               <>
                 <Link style={{ textDecoration: "none", color: "white" }} to="/">
