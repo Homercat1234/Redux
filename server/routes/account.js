@@ -11,7 +11,7 @@ router.use(express.json());
 router.use(cors());
 
 const prisma = new PrismaClient();
-
+// Returns the number of users based on an email or an email and a name.
 const findUsers = async (name = null, email) => {
   if (name != null) {
     const user = await prisma.users.findMany({
@@ -35,6 +35,7 @@ const findUsers = async (name = null, email) => {
   }
 };
 
+// A method that generates a new uuid
 const getUid = async () => {
   let uid = uuidv4();
   while (
@@ -49,11 +50,12 @@ const getUid = async () => {
   return uid;
 };
 
+// A method that createsa session
 const getSession = async (uid, uidHash = null, expires = null) => {
   const checkSessions = async (uidHash) => {
     await prisma.sessions.count({
       where: {
-        uid: uidHash,
+        hash: uidHash,
       },
     });
   };
@@ -62,7 +64,7 @@ const getSession = async (uid, uidHash = null, expires = null) => {
     if (oldHash != null) {
       await prisma.sessions.update({
         where: {
-          uid: uid,
+          uid,
         },
         data: {
           update: {
