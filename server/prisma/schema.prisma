@@ -22,3 +22,9 @@ model users {
   password  String    @db.VarChar(1000)
   createdat DateTime? @default(now()) @db.Timestamp(0)
 }
+
+model sessions {
+  uid     String   @id @unique(map: "uid") @db.VarChar(1000)
+  hash    String   @unique(map: "hash") @db.VarChar(1000)
+  expires DateTime @db.Timestamp(0)
+}

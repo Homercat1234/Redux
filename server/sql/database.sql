@@ -43,6 +43,15 @@ CREATE TABLE IF NOT EXISTS `custom`.`posts` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+CREATE TABLE IF NOT EXISTS `custom`.`sessions` (
+  `uid` varchar(1000) NOT NULL,
+  `hash` varchar(1000) NOT NULL,
+  `expires` TIMESTAMP NOT NULL,
+  UNIQUE (`uid`),
+  UNIQUE (`hash`),
+  PRIMARY KEY (`uid`))
+ENGINE = InnoDB;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
