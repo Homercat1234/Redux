@@ -14,9 +14,13 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
+import { validate } from '../state/store/session.js';
+import { useSelector, useDispatch } from 'react-redux';
 
 function NavDrawer() {
   const [openDrawer, setOpenDrawer] = useState(false);
+  const user = useSelector((state) => state.session.value);
+  const dispatch = useDispatch();
 
   return (
     <>
@@ -45,7 +49,7 @@ function NavDrawer() {
           <Link style={{ textDecoration: "none", color: "black" }} to="/login">
             <ListItem onClick={() => setOpenDrawer(false)}>
               <Button color="inherit">
-                <ListItemText>Login</ListItemText>
+                <ListItemText>{ user === true ? "logout" : "login"}</ListItemText>
               </Button>
             </ListItem>
           </Link>
@@ -68,9 +72,12 @@ export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [sticky, setSticky] = useState(false);
+  const user = useSelector((state) => state.session.value)
+  const dispatch = useDispatch()
 
   useEffect(() => {
     window.addEventListener("scroll", isSticky);
+    console.log(user);
     return () => {
       window.removeEventListener("scroll", isSticky);
     };
@@ -119,7 +126,7 @@ export default function Navbar() {
             )}
           </Typography>
           <Link style={{ textDecoration: "none", color: "white" }} to="/login">
-            <Button color="inherit"> Login</Button>
+            <Button color="inherit">{ user === true ? "logout" : "login"}</Button>
           </Link>
           {isMobile === true && (
             <>

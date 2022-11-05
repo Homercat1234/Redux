@@ -13,24 +13,44 @@ import {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import img from "../images/cloud.jpg";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Axios from "axios";
+import { create, update } from "../state/store/session.js";
+import { useDispatch } from "react-redux";
+import verify from "../functions/verify";
 
 const theme = createTheme();
 
 export default function Login() {
-  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [session, setSession] = useState(false);
+
   useEffect(() => {
-    window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
-  }, []);
+    (async function () {
+      let valid = await verify();
+      setSession(valid);
+      dispatch(update(session));
+    })();
+    if (session === true) navigate("/home");
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, [dispatch, navigate, session]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    Axios.post("http://localhost:5000/account/login", {
       email: data.get("email"),
       password: data.get("password"),
-    });
+    })
+      .then(function (res) {
+        dispatch(create(res.data));
+        navigate("/home");
+      })
+      .catch(function (error) {
+        // error response flow
+      });
   };
 
   return (
@@ -109,12 +129,16 @@ export default function Login() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link style={{ color: "blue"}} href="#" variant="body2">
+                  <Link style={{ color: "blue" }} href="#" variant="body2">
                     Forgot password?
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link style={{ color: "blue"}}to="/register" variant="body2">
+                  <Link
+                    style={{ color: "blue" }}
+                    to="/register"
+                    variant="body2"
+                  >
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>

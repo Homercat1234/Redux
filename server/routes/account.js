@@ -11,8 +11,10 @@ router.use(express.json());
 router.use(cors());
 
 const prisma = new PrismaClient();
+
 // Returns the number of users based on an email or an email and a name.
-const findUsers = async (name = null, email) => {
+const getUserCount = async (name = null, email) => {
+  // If the name is provided
   if (name != null) {
     const user = await prisma.users.findMany({
       where: {
@@ -25,6 +27,7 @@ const findUsers = async (name = null, email) => {
       },
     });
     return user.length;
+    // If the name is not provided
   } else {
     const user = await prisma.users.findMany({
       where: {
@@ -36,8 +39,10 @@ const findUsers = async (name = null, email) => {
 };
 
 // A method that generates a new uuid
-const getUid = async () => {
+const generateUid = async () => {
   let uid = uuidv4();
+
+  // If the uid already exists in the database regenerate
   while (
     (await prisma.users.count({
       where: {
@@ -50,17 +55,20 @@ const getUid = async () => {
   return uid;
 };
 
-// A method that createsa session
+// A method that creates a session
 const getSession = async (uid, uidHash = null, expires = null) => {
-  const checkSessions = async (uidHash) => {
-    await prisma.sessions.count({
+  // A method that checks to see if the hash is in the database
+  const checkHash = async (uidHash) => {
+    return await prisma.sessions.count({
       where: {
         hash: uidHash,
       },
     });
   };
 
+  // A method that inserts the session
   const insertSession = async (uidHash, expires, oldHash = null) => {
+    // If a session already exists in the database
     if (oldHash != null) {
       await prisma.sessions.update({
         where: {
@@ -78,6 +86,7 @@ const getSession = async (uid, uidHash = null, expires = null) => {
           },
         },
       });
+      // If a session does not exist in the database
     } else {
       await prisma.sessions.create({
         data: {
@@ -88,44 +97,60 @@ const getSession = async (uid, uidHash = null, expires = null) => {
       });
     }
   };
-
-  if (uidHash == null) {
-    if ((await checkSessions(uidHash)) !== 0) {
-      const isValid = await compare(uid, uidHash);
-      if (isValid) {
+  console.log(expires)
+  // If the uid hash provided
+  if (uidHash != null) {
+    // Check if the hash is database
+    if ((await checkHash(uidHash)) > 0) {
+      // Check if the hash is valid
+      if (await compare(uid, uidHash)) {
+        // Generate a new hash
         const salt = await genSalt(10);
         const oldHash = uidHash;
         uidHash = await hash(uid, salt);
 
-        while ((await checkSessions(uidHash)) > 0) {
+        // Make sure the hash is not in the database
+        while ((await checkHash(uidHash)) > 0) {
           salt = await genSalt(10);
           uidHash = await hash(uid, salt);
         }
 
+        // Generate an expiration
         let date = new Date(Date.now());
         date.setDate(date.getDate() + 1);
-        if (expires != null) date.setDate(date.getDate() + expires - 1);
+        // If the expires is not null update expires with the new date
+        if (expires != null) date = expires;
 
+        // Insert the seession
         await insertSession(uidHash, date, oldHash);
         return { result: true, uidHash, expires: date };
       }
+      // If the hash is invalid
       return { result: false };
+      // If the hash is not in the database
     } else {
+      // The input must be invalid
       return { result: false };
     }
+    // If the uidHash is not provided
   } else {
+    // Generate a new hash
     let salt = await genSalt(10);
     uidHash = await hash(uid, salt);
 
-    while ((await checkSessions(uidHash)) > 0) {
+    // Make sure the hash is not in the database
+    while ((await checkHash(uidHash)) > 0) {
       salt = await genSalt(10);
       uidHash = await hash(uid, salt);
     }
 
+    // Generate an expiration
     let date = new Date(Date.now());
     date.setDate(date.getDate() + 1);
-    if (expires != null) date.setDate(date.getDate() + expires - 1);
+    // If the expires is not null update expires with the new date
+    if (expires != null) date = expires;
 
+    // Insert the seession
     await insertSession(uidHash, date);
     return { result: true, uidHash, expires: date };
   }
@@ -141,10 +166,10 @@ router.post("/register", async (req, res) => {
       .status(400)
       .json({ message: "A required parameter was not found" });
 
-  if ((await findUsers(name, email)) > 0)
+  if ((await getUserCount(name, email)) > 0)
     return res.status(400).send({ message: "Invalid username or email" });
 
-  let uid = await getUid();
+  let uid = await generateUid();
 
   const salt = await genSalt(10);
   password = await hash(password, salt);
@@ -160,13 +185,12 @@ router.post("/register", async (req, res) => {
 
   let date = new Date(Date.now());
   date.setDate(date.getDate() + 1);
-
-  const session = await getSession(uid, (expires = date));
+  const session = await getSession(uid, null, date);
   if (session.result === false)
     return res.status(400).json({ message: "Failed to create session" });
 
   res
-    .status(200)
+    .status(202)
     .cookie("session")
     .send({ uid, expires: date, hash: session.uidHash });
 });
@@ -185,7 +209,7 @@ router.post("/login", async (req, res) => {
       .status(400)
       .json({ message: "A required parameter was not found" });
 
-  if ((await findUsers(email)) != 0)
+  if ((await getUserCount(email)) != 0)
     return res.status(400).send({ message: "Invalid username or email" });
 
   const user = await prisma.users.findUnique({ where: { email: email } });
@@ -201,12 +225,12 @@ router.post("/login", async (req, res) => {
   let date = new Date(Date.now());
   date.setDate(date.getDate() + sessionLength);
 
-  const session = await getSession(uid, (expires = date));
+  const session = await getSession(uid, null, date);
   if (session.result === false)
     return res.status(400).json({ message: "Failed to create session" });
 
   res
-    .status(200)
+    .status(202)
     .cookie("session")
     .send({ uid, expires: date, hash: session.uidHash });
 });
@@ -219,10 +243,58 @@ router.post("/logout", async (req, res) => {
     return res
       .status(400)
       .json({ message: "A required parameter was not found" });
-    
+
   const { uid, hash, expires } = session;
 
+  if (
+    (await prisma.sessions.count({
+      where: {
+        uid,
+        hash,
+        expires,
+      },
+    })) === 0
+  )
+    return res.status(400).json({ message: "Session not found" });
+
+  await prisma.sessions.delete({
+    where: {
+      uid,
+      hash,
+      expires,
+    },
+  });
+
+  return res.status(202).json({ message: "Sesson deleted" });
+});
+
+router.post("/verify", async (req, res) => {
+  session = JSON.parse(req.headers["session"]);
+  if (session.uid == null || session.expires == null || session.hash == null)
+    return res.status(400).json({ message: "A required parameter was null", result: false });
+  if (session.uid == "" || session.expires == "" || session.hash == "")
+    return res
+      .status(400)
+      .json({ message: "A required parameter was not found", result: false});
+
+  const { uid, hash, expires } = session;
+  const find = await prisma.sessions.findUnique({
+      where: {
+        uid,
+      },
+    }
+  )
+  if(!find)
+    return res.status(400).json({ message: "Session not found", result: false});
+  if(find.hash !== hash)
+    return res.status(400).json({ message: "Session not found", result: false});
+
+  dateCompare = find.expires;
+  dateCompare.setDate(dateCompare.getMinutes() + 1);
+  if(expires > dateCompare)
+  return res.status(400).json({ message: "Session expired", result: false});
   
+  return res.status(202).json({ message: "Verifed", result: true });
 });
 
 module.exports = router;

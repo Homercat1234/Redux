@@ -14,18 +14,28 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import img from "../images/leaf.jpg";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Axios from "axios";
-import Cookies from "universal-cookie";
+import { create, update } from "../state/store/session.js";
+import { useDispatch } from "react-redux";
+import verify from "../functions/verify";
 
 const theme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [session, setSession] = useState();
 
   useEffect(() => {
+    (async function () {
+      let valid = await verify();
+      setSession(valid);
+    })();
+    dispatch(update(session));
+    if (session === true) navigate("/home");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }, []);
+  }, [dispatch, navigate]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -37,12 +47,7 @@ export default function Login() {
       password: data.get("password"),
     })
       .then(function (res) {
-        const cookies = new Cookies();
-        const { uid, expires, hash } = res.data;
-        cookies.set("session", { uid, expires, hash }, {
-          path: "/",
-          expires: new Date(res.data.expires),
-        });
+        dispatch(create(res.data));
         navigate("/home");
       })
       .catch(function (error) {
