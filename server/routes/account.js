@@ -66,24 +66,26 @@ const getSession = async (uid, uidHash = null, expires = null) => {
     });
   };
 
+  // Checks to see if the user is in the db
+  const checkUid = async (uid) => {
+    return await prisma.sessions.count({
+      where: {
+        uid,
+      },
+    });
+  };
+
   // A method that inserts the session
-  const insertSession = async (uidHash, expires, oldHash = null) => {
+  const insertSession = async (uidHash, expires) => {
     // If a session already exists in the database
-    if (oldHash != null) {
+    if ((await checkUid(uid)) > 0) {
       await prisma.sessions.update({
         where: {
           uid,
         },
         data: {
-          update: {
-            where: {
-              hash: oldHash,
-            },
-            data: {
-              hash: uidHash,
-              expires,
-            },
-          },
+          hash: uidHash,
+          expires,
         },
       });
       // If a session does not exist in the database
@@ -97,7 +99,6 @@ const getSession = async (uid, uidHash = null, expires = null) => {
       });
     }
   };
-  console.log(expires)
   // If the uid hash provided
   if (uidHash != null) {
     // Check if the hash is database
@@ -215,12 +216,14 @@ router.post("/login", async (req, res) => {
   const user = await prisma.users.findUnique({ where: { email: email } });
 
   if (user) {
-    const validPassword = await compare(body.password, user.password);
+    const validPassword = await compare(password, user.password);
     if (!validPassword)
       return res.status(400).json({ message: "Invalid Password" });
   } else {
     return res.status(401).json({ message: "User does not exist" });
   }
+
+  const uid = user.uid;
 
   let date = new Date(Date.now());
   date.setDate(date.getDate() + sessionLength);
@@ -244,24 +247,22 @@ router.post("/logout", async (req, res) => {
       .status(400)
       .json({ message: "A required parameter was not found" });
 
-  const { uid, hash, expires } = session;
+  const { uid, hash } = session;
 
   if (
     (await prisma.sessions.count({
       where: {
         uid,
         hash,
-        expires,
       },
     })) === 0
   )
     return res.status(400).json({ message: "Session not found" });
 
-  await prisma.sessions.delete({
+  await prisma.sessions.deleteMany({
     where: {
       uid,
       hash,
-      expires,
     },
   });
 
@@ -271,29 +272,34 @@ router.post("/logout", async (req, res) => {
 router.post("/verify", async (req, res) => {
   session = JSON.parse(req.headers["session"]);
   if (session.uid == null || session.expires == null || session.hash == null)
-    return res.status(400).json({ message: "A required parameter was null", result: false });
+    return res
+      .status(400)
+      .json({ message: "A required parameter was null", result: false });
   if (session.uid == "" || session.expires == "" || session.hash == "")
     return res
       .status(400)
-      .json({ message: "A required parameter was not found", result: false});
+      .json({ message: "A required parameter was not found", result: false });
 
   const { uid, hash, expires } = session;
   const find = await prisma.sessions.findUnique({
-      where: {
-        uid,
-      },
-    }
-  )
-  if(!find)
-    return res.status(400).json({ message: "Session not found", result: false});
-  if(find.hash !== hash)
-    return res.status(400).json({ message: "Session not found", result: false});
+    where: {
+      uid,
+    },
+  });
+  if (!find)
+    return res
+      .status(400)
+      .json({ message: "Session not found", result: false });
+  if (find.hash !== hash)
+    return res
+      .status(400)
+      .json({ message: "Session not found", result: false });
 
-  dateCompare = find.expires;
+  let dateCompare = find.expires;
   dateCompare.setDate(dateCompare.getMinutes() + 1);
-  if(expires > dateCompare)
-  return res.status(400).json({ message: "Session expired", result: false});
-  
+  if (expires > dateCompare)
+    return res.status(400).json({ message: "Session expired", result: false });
+
   return res.status(202).json({ message: "Verifed", result: true });
 });
 

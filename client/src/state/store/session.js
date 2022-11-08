@@ -8,10 +8,9 @@ const session = createSlice({
   },
   reducers: {
     update: (state, data) => {
-      state.value = data;
+      state.value = data.payload;
     },
     create: (state, data) => {
-      console.log(data);
       const cookies = new Cookies();
       const { uid, expires, hash } = data.payload;
       cookies.set(
@@ -33,6 +32,6 @@ const session = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { validate, create, update } = session.actions;
+export const { remove, create, update } = session.actions;
 
 export default session.reducer;

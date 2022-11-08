@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `custom`.`posts` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uid` varchar(1000) NOT NULL,
   `title` varchar(1000) NOT NULL,
-  `password` varchar(1000) NOT NULL,
+  `post` varchar(1000) NOT NULL,
   `createdat` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (`id`),
   PRIMARY KEY (`id`))
