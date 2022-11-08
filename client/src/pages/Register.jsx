@@ -25,17 +25,17 @@ const theme = createTheme();
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [session, setSession] = useState();
+  const [session, setSession] = useState(false);
 
   useEffect(() => {
     (async function () {
       let valid = await verify();
       setSession(valid);
+      dispatch(update(session));
     })();
-    dispatch(update(session));
-    if (session === true) navigate("/home");
+    if (session === true) navigate("/");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-  }, [dispatch, navigate]);
+  }, [dispatch, navigate, session]);
 
   const handleSubmit = (event) => {
     event.preventDefault();

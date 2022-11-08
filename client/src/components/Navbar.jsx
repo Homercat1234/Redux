@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Avatar,
   AppBar,
   Toolbar,
   Typography,
@@ -10,17 +11,33 @@ import {
   useMediaQuery,
   List,
   ListItem,
+  Paper,
   ListItemText,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
-import { validate } from '../state/store/session.js';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
+import { update, remove } from "../state/store/session";
+import verify from "../functions/verify";
+import logout from "../functions/logout";
+import PersonSharpIcon from '@mui/icons-material/PersonSharp';
+
+function ProfileIcon(props) {
+  if (props.icon == null)
+    return (
+      <Avatar sx={{ m: 1, bgcolor: "info.dark" }} component={Paper} elevation={2}>
+      <PersonSharpIcon />
+      </Avatar>
+    );
+  else
+    return (
+      <Avatar sx={{ m: 1, bgcolor: "info.dark" }} src={props.icon} alt="P" />
+    );
+}
 
 function NavDrawer() {
   const [openDrawer, setOpenDrawer] = useState(false);
   const user = useSelector((state) => state.session.value);
-  const dispatch = useDispatch();
 
   return (
     <>
@@ -49,7 +66,9 @@ function NavDrawer() {
           <Link style={{ textDecoration: "none", color: "black" }} to="/login">
             <ListItem onClick={() => setOpenDrawer(false)}>
               <Button color="inherit">
-                <ListItemText>{ user === true ? "logout" : "login"}</ListItemText>
+                <ListItemText>
+                  {user === true ? "logout" : "login"}
+                </ListItemText>
               </Button>
             </ListItem>
           </Link>
@@ -72,16 +91,22 @@ export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [sticky, setSticky] = useState(false);
-  const user = useSelector((state) => state.session.value)
-  const dispatch = useDispatch()
+  const user = useSelector((state) => state.session.value);
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const [session, setSession] = useState(user);
 
   useEffect(() => {
     window.addEventListener("scroll", isSticky);
-    console.log(user);
+    (async function () {
+      let valid = await verify();
+      setSession(valid);
+      dispatch(update(session));
+    })();
     return () => {
       window.removeEventListener("scroll", isSticky);
     };
-  }, []);
+  }, [user, location, session]);
 
   const isSticky = () => {
     const scrollTop = window.scrollY;
@@ -125,8 +150,25 @@ export default function Navbar() {
               </>
             )}
           </Typography>
-          <Link style={{ textDecoration: "none", color: "white" }} to="/login">
-            <Button color="inherit">{ user === true ? "logout" : "login"}</Button>
+          {user === true && (
+            <Link
+              style={{ textDecoration: "none", color: "white" }}
+              to="/dashboard"
+            >
+            <ProfileIcon />
+            </Link>
+          )}
+          <Link
+            style={{ textDecoration: "none", color: "white" }}
+            to={user === true ? "/" : "/login"}
+            onClick={async () => {
+              await logout();
+              dispatch(remove());
+            }}
+          >
+            <Button color="inherit">
+              {user === true ? "Logout" : "Login"}
+            </Button>
           </Link>
           {isMobile === true && (
             <>

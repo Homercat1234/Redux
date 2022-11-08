@@ -33,7 +33,8 @@ export default function Login() {
       setSession(valid);
       dispatch(update(session));
     })();
-    if (session === true) navigate("/home");
+    if (session === true)
+        navigate("/");
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   }, [dispatch, navigate, session]);
 
