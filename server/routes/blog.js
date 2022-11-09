@@ -50,7 +50,7 @@ router.post("/post", async (req, res) => {
     res
       .status(parseInt(verifed.status))
       .json({ messege: verifed.message, result: false });
-  const uid = JSON.parse(req.headers["session"].uid);
+  const uid = JSON.parse(req.headers["session"]).uid;
   const { title, post } = req.body;
   await prisma.posts.create({
     data: {
@@ -64,6 +64,12 @@ router.post("/post", async (req, res) => {
 router.get("/post", async (req, res) => {
     const posts = await prisma.posts.findMany();
     res.status(202).json(posts);
+});
+
+router.get("/name", async (req, res) => {
+  const {uid} = req.headers;
+  const name = await prisma.users.findMany({where: {uid}});
+  res.status(200).send(name[0].name);
 });
 
 module.exports = router;
